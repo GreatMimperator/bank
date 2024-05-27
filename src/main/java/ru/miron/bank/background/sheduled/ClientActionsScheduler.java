@@ -2,6 +2,7 @@ package ru.miron.bank.background.sheduled;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -17,10 +18,10 @@ import java.math.BigDecimal;
 public class ClientActionsScheduler {
 
     public final ClientRepository repository;
-    public final Increaser increaser;
+    public final AccountIncreaser accountIncreaser;
 
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRateString = "${scheduler.client.account-size.increase-delay-ms}")
     public void increaseAccountSize() {
         log.debug("Count: %d".formatted(repository.findAll().size()));
         var clientLogins = repository.findAll()
@@ -28,20 +29,26 @@ public class ClientActionsScheduler {
                 .toList();
         log.debug("Clients to check for account increase: %d".formatted(clientLogins.size()));
         for (var clientLogin : clientLogins) {
-            increaser.increaseAccountSize(clientLogin);
+            accountIncreaser.increaseAccountSize(clientLogin);
         }
     }
 
     @Service
-    @AllArgsConstructor
     @Slf4j
-    public static class Increaser {
+    public static class AccountIncreaser {
         public final ClientRepository repository;
 
-        public static final Double INCREASE_PERCENTAGE = 5.0;
-        public static final BigDecimal INCREASE_MULTIPLIER = BigDecimal.valueOf(1 + INCREASE_PERCENTAGE / 100);
-        public static final Double MAX_ACCOUNT_INCREASE_PERCENTAGE = 207.0;
-        public static final BigDecimal MAX_ACCOUNT_INCREASE_MULTIPLIER = BigDecimal.valueOf(MAX_ACCOUNT_INCREASE_PERCENTAGE / 100);
+        public final BigDecimal increaseMultiplier;
+        public final BigDecimal increaseMaxFromBaseMultiplier;
+
+        public AccountIncreaser(ClientRepository repository,
+                                @Value("${scheduler.client.account-size.increase-percentage}") Double increasePercentage,
+                                @Value("${scheduler.client.account-size.increase-max-from-base-percentage}") Double increaseMaxFromBasePercentage) {
+            this.repository = repository;
+            this.increaseMultiplier = BigDecimal.valueOf(1 + increasePercentage / 100);
+            this.increaseMaxFromBaseMultiplier = BigDecimal.valueOf(increaseMaxFromBasePercentage / 100);
+        }
+
 
         @Transactional(isolation = Isolation.SERIALIZABLE)
         public void increaseAccountSize(String clientLogin) {
@@ -52,7 +59,7 @@ public class ClientActionsScheduler {
             }
             var client = clientOpt.get();
             log.debug("Client with login %s has %f money on account".formatted(clientLogin, client.getAccountSize()));
-            var maxAccountSizeIncreaseTo = client.getAccountStartSize().multiply(MAX_ACCOUNT_INCREASE_MULTIPLIER);
+            var maxAccountSizeIncreaseTo = client.getAccountStartSize().multiply(increaseMaxFromBaseMultiplier);
             log.debug("Client with login %s has %f money as ceil because base account money are %f".formatted(
                     clientLogin,
                     maxAccountSizeIncreaseTo,
@@ -62,7 +69,7 @@ public class ClientActionsScheduler {
                 log.debug("Client with login %s already has too much money".formatted(clientLogin));
                 return;
             }
-            var increasedAccountSize = client.getAccountSize().multiply(INCREASE_MULTIPLIER);
+            var increasedAccountSize = client.getAccountSize().multiply(increaseMultiplier);
             if (increasedAccountSize.compareTo(maxAccountSizeIncreaseTo) >= 0) {
                 client.setAccountSize(maxAccountSizeIncreaseTo);
             } else {
