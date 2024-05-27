@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: postgres:16.3
+    environment:
+      POSTGRES_DB: bank
+      POSTGRES_USER: bankowner
+      POSTGRES_PASSWORD: bankownerpassword
+    ports:
+      - "5555:5432"
+    volumes:
+      - ./docker-scripts/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql

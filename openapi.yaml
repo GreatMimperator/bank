@@ -1,0 +1,318 @@
+openapi: 3.1.0
+info:
+  title: Сервис для банковских операций
+  description: |-
+    В нашей системе есть пользователи (клиенты), у каждого клиента есть строго один “банковский аккаунт”, в котором изначально лежит какая-то сумма. Деньги можно переводить между клиентами. На средства также начисляются проценты
+  contact:
+    url: https://t.me/greatimperator
+    name: Телеграм разработчика
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: /api/v1
+tags:
+  - name: Аутентификация
+  - name: Действия клиента
+  - name: Поисковой движок
+  - name: Служебные действия
+paths:
+  /auth/client/login:
+    post:
+      tags: [Аутентификация]
+      summary: Получить access и refresh токены
+      requestBody:
+        description: Логин/телефон/мейл - должен присутствовать ровно один
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              oneOf:
+                - type: object
+                  title: Login based
+                  properties:
+                    login:
+                      $ref: '#/components/schemas/Login'
+                    password:
+                      $ref: '#/components/schemas/Password'
+                - type: object
+                  title: Phone based
+                  properties:
+                    phone:
+                      $ref: '#/components/schemas/Phone'
+                    password:
+                      $ref: '#/components/schemas/Password'
+                - type: object
+                  title: Email based
+                  properties:
+                    email:
+                      $ref: '#/components/schemas/Email'
+                    password:
+                      $ref: '#/components/schemas/Password'
+            example:
+              login: "godlike21"
+              password: "r09122hg4983912fjeiw"
+      responses:
+        '200':
+          description: Успешный вход, в ответ отправляются access и refresh токены
+          content: 
+            application/json: 
+              schema: 
+                type: object
+                properties:
+                  accessToken:
+                    $ref: '#/components/schemas/AccessToken'
+                  refreshToken:
+                    $ref: '#/components/schemas/RefreshToken'
+        '401':
+          description: Аутентификационные данные неверны
+  /auth/client/token/refresh:
+    post:
+      tags: [Аутентификация]
+      summary: Получить новые access и refresh токены
+      requestBody:
+        content: 
+          text/plain: 
+            schema:
+              type: string
+              examples:
+                - "YRjxLpsjRqL7zYuKstXogqioA_P3Z4fiEuga0NCVRcDSc8cy_9msxg"
+      responses:
+        '200':
+          description: Успешное обновление токенов (возвращаем новые)
+          content: 
+            application/json: 
+              schema: 
+                type: object
+                properties:
+                  accessToken:
+                    $ref: '#/components/schemas/AccessToken'
+                  refreshToken:
+                    $ref: '#/components/schemas/RefreshToken'
+        '401':
+          description: Если токен истек или на одном из устройств был logout
+  /auth/client/logout:
+    post:
+      tags: [Аутентификация]
+      summary: Выйти (сделать невалидными refresh токены)
+      requestBody:
+        content: 
+          text/plain: 
+            schema:
+              type: string
+              examples:
+                - "YRjxLpsjRqL7zYuKstXogqioA_P3Z4fiEuga0NCVRcDSc8cy_9msxg"
+      responses:
+        '204':
+          description: Подверждение выхода
+  /clients/self/phone:
+    put:
+      tags: [Действия клиента]
+      summary: Добавить/Обновить свой телефон
+      requestBody:
+        content:
+          text/plain: 
+            schema: 
+              $ref: '#/components/schemas/Phone'
+      responses:
+        '204':
+          description: Успешное добавление/изменение телефона
+      security:
+        - bearerAuth: []
+    delete:
+      tags: [Действия клиента]
+      summary: Удалить свой телефон
+      responses:
+        '200':
+          description: Теперь телефон не значится за клиентом
+      security:
+        - bearerAuth: []
+  /clients/self/email:
+    put:
+      tags: [Действия клиента]
+      summary: Добавить/Обновить свой email
+      requestBody:
+        content:
+          text/plain: 
+            schema: 
+              $ref: '#/components/schemas/Email'
+      responses:
+        '200':
+          description: Успешное добавление/изменение email'а
+      security:
+        - bearerAuth: []
+    delete:
+      tags: [Действия клиента]
+      summary: Удалить свой email
+      responses:
+        '200':
+          description: Теперь email не значится за клиентом
+      security:
+        - bearerAuth: []
+  /clients/self/transactions/transfer:
+    post:
+      tags: [Действия клиента]
+      summary: Перевести деньги другому клиенту
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                toLogin:
+                  $ref: '#/components/schemas/Login'
+                amount:
+                  type: number
+                  examples: [320]
+      responses:
+        '200':
+          description: Статус ответа
+          content:  
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  state:
+                    type: string
+                    enum:
+                      - transfered
+                      - not enough money
+                  transferId:
+                    type: number
+                    examples: [31512]
+        '404':
+          description: Такого пользователя не существует
+      security:
+        - bearerAuth: []
+  /search/clients:
+    get:
+      tags: [Поисковой движок]
+      summary: Поиск клиентов по фильтрам
+      description: "Фильтры: Клиенты младше даты, по телефону или email'у, приблизительно по ФИО"
+      parameters:
+        - in: query
+          name: youngerThan
+          schema:
+            $ref: '#/components/schemas/Date'
+        - in: query
+          name: phone
+          schema:
+            $ref: '#/components/schemas/Phone'
+        - in: query
+          name: email
+          schema:
+            $ref: '#/components/schemas/Email'
+        - in: query
+          name: nameBeginsWith
+          schema:
+            type: string
+            examples:
+              - "Ива"
+        - in: query
+          name: surnameBeginsWith
+          schema:
+            type: string
+            examples:
+              - "Ива"
+        - in: query
+          name: middleNameBeginsWith
+          schema:
+            type: string
+            examples:
+              - "Ива"
+      responses: 
+        '200':
+          description: Список клиентов
+          content: 
+            application/json: 
+              schema: 
+                type: array
+                items:
+                  type: object
+                  properties: 
+                    login:
+                      $ref: '#/components/schemas/Login'
+                examples:
+                  - - login: "Laura23"
+                    - login: "Miala342"
+      security:
+        - bearerAuth: []
+  /service/clients:
+    post:
+      tags: [Служебные действия]
+      summary: Добавить нового клиента
+      description: Размер счета по умолчанию равен 0, обязательно указать телефон или почту (можно оба)
+      requestBody:
+        content: 
+          application/json: 
+            schema: 
+              type: object
+              required: [login, birthDate, name, surname, middleName, password]
+              properties:
+                login:
+                  $ref: '#/components/schemas/Login'
+                phone:
+                  $ref: '#/components/schemas/Phone'
+                email:
+                  $ref: '#/components/schemas/Email'
+                birthDate:
+                  $ref: '#/components/schemas/Date'
+                name:
+                  type: string
+                  examples:
+                    - "Иван"
+                surname:
+                  type: string
+                  examples:
+                    - "Иванов"
+                middleName:
+                  type: string
+                  examples:
+                    - "Иванович"
+                password:
+                  $ref: '#/components/schemas/Password'
+                accountSize:
+                  type: number
+                  examples: [4000]
+      responses: 
+        '204':
+          description: Пользователь успешно создан
+        '409':
+          description: Такой пользователь уже существует (с таким логином, телефоном или email'ом)
+components:
+  schemas:
+    Login:
+      type: string
+      examples: 
+        - "Laura213"
+    Email:
+      type: string
+      examples: 
+        - "laura.fourance@gmail.com"
+    Password:
+      type: string
+      examples: 
+        - "my214password"
+    Phone:
+      type: string
+      examples:
+        - "+7 999 022 11 23"
+    AccessToken:
+      type: string
+      examples: 
+        - "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0ODc5NzU0NTgsImlhdCI6MTQ4Nzk3MTg1OCwiaXNzIjoiYWNtZS5jb20iLCJzdWIiOiI4NThhNGIwMS02MmM4LTRjMmYtYmZhNy02ZDAxODgzM2JlYTciLCJhcHBsaWNhdGlvbklkIjoiM2MyMTllNTgtZWQwZS00YjE4LWFkNDgtZjRmOTI3OTNhZTMyIiwicm9sZXMiOlsiYWRtaW4iXX0.O29_m_NDa8Cj7kcpV7zw5BfFmVGsK1n3EolCj5u1M9hZ09EnkaOl5n68OLsIcpCrX0Ue58qsabag3MCNS6H4ldt6kMnH6k4bVg4TvIjoR8WE-yGcu_xDUObYKZYaHWiNeuDL1EuQQI_8HajQLND-c9juy5ILuz6Fhx8CLfHCziEHX_aQPt7jQ2IIasVzprKkgvWS07Hiv2Oskryx49wqCesl46b-30c6nfttHUDEQrVq9gaepca3Nhjj_cPtC400JgLCN9DOYIbtd69zvD8vDUOvVzMr2HGdWtKthqa35NF-3xMZKD8CShe8ZT74fNd9YZ0WRE-YeIf3T_Hv5p5V2w"
+    RefreshToken:
+      type: string
+      examples:
+        - "YRjxLpsjRqL7zYuKstXogqioA_P3Z4fiEuga0NCVRcDSc8cy_9msxg"
+    Date:
+      type: string
+      examples:
+        - "2024-04-12T23:20:50.52Z"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
