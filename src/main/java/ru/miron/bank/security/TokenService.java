@@ -8,9 +8,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
-import ru.miron.bank.api.dto.AccessAndRefreshTokenDto;
 import ru.miron.bank.security.entity.WorkingRefreshToken;
 import ru.miron.bank.security.repository.WorkingRefreshTokenRepository;
 

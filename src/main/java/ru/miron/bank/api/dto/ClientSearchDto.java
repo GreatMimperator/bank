@@ -5,7 +5,6 @@ import lombok.Data;
 import ru.miron.bank.entity.client.Client;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor

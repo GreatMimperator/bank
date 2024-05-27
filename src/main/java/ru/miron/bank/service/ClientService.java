@@ -2,7 +2,6 @@ package ru.miron.bank.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -14,7 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.miron.bank.entity.client.Client;
 import ru.miron.bank.entity.client.ClientRepository;
@@ -25,7 +23,6 @@ import ru.miron.bank.exception.ClientNotFoundException;
 import ru.miron.bank.exception.SenderEqualsReceiverException;
 
 import java.math.BigDecimal;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.LinkedList;

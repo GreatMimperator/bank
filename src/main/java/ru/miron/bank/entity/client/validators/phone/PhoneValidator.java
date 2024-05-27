@@ -2,7 +2,6 @@ package ru.miron.bank.entity.client.validators.phone;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.regex.Pattern;
