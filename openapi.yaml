@@ -23,7 +23,7 @@ paths:
       tags: [Аутентификация]
       summary: Получить access и refresh токены
       requestBody:
-        description: Логин/телефон/мейл - должен присутствовать ровно один
+        description: Логин/телефон/мейл - Будет воспринят первый из них, остальные будут проигнорированы
         content:
           application/json:
             schema:
@@ -76,9 +76,7 @@ paths:
         content: 
           text/plain: 
             schema:
-              type: string
-              examples:
-                - "YRjxLpsjRqL7zYuKstXogqioA_P3Z4fiEuga0NCVRcDSc8cy_9msxg"
+              $ref: '#/components/schemas/RefreshToken'
       responses:
         '200':
           description: Успешное обновление токенов (возвращаем новые)
@@ -177,8 +175,8 @@ paths:
                   state:
                     type: string
                     enum:
-                      - transfered
-                      - not enough money
+                      - TRANSFERED
+                      - NOT_ENOUGH_MONEY
                   transferId:
                     type: number
                     examples: [31512]
@@ -285,20 +283,24 @@ components:
   schemas:
     Login:
       type: string
+      format: '[а-яА-Я\w\-\_\d]{5,35}'
       examples: 
         - "Laura213"
     Email:
       type: string
+      format: any email
       examples: 
         - "laura.fourance@gmail.com"
     Password:
       type: string
+      format: '[а-яА-Я\w\d_-]{8,100}'
       examples: 
         - "my214password"
     Phone:
-      type: string
+      type: array
+      format: '(\d{1,3})(\d{3})(\d{%d})'
       examples:
-        - "+7 999 022 11 23"
+        - "79990221123"
     AccessToken:
       type: string
       examples: 
@@ -309,6 +311,7 @@ components:
         - "YRjxLpsjRqL7zYuKstXogqioA_P3Z4fiEuga0NCVRcDSc8cy_9msxg"
     Date:
       type: string
+      format: JDBC timestamp
       examples:
         - "2024-04-12T23:20:50.52Z"
   securitySchemes:
