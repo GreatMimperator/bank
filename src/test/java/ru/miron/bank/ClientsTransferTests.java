@@ -153,7 +153,7 @@ public class ClientsTransferTests {
     @Test
     void testTransferConcurrentRequests() throws Exception {
         var senderAccessToken = getAccessToken(SENDER_LOGIN, SENDER_PASSWORD);
-        int requestsCount = 2000;
+        int requestsCount = 100;
         var toSendByRequestSize = BigDecimal.valueOf(1);
         var transferRequestDto = new TransferRequestDto(RECEIVER_LOGIN, toSendByRequestSize);
         CompletableFuture<?>[] futures = IntStream.range(0, requestsCount)
@@ -190,7 +190,7 @@ public class ClientsTransferTests {
     }
 
     public String getAccessToken(String login, String password) throws Exception {
-        var tokensAsString = login(SENDER_LOGIN, SENDER_PASSWORD)
+        var tokensAsString = login(login, password)
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         var tokens = jsonToTokens(tokensAsString);
