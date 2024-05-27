@@ -31,6 +31,7 @@ public class Client {
 
     private String encodedPassword;
 
+    private BigDecimal accountStartSize;
     private BigDecimal accountSize;
 
     public enum IdType {

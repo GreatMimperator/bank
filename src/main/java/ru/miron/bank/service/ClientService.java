@@ -167,4 +167,8 @@ public class ClientService {
     private void applyPagination(TypedQuery<?> query, Pageable pageable) {
         query.setFirstResult((int) pageable.getOffset()).setMaxResults(pageable.getPageSize());
     }
+
+    public List<Client> getAll() {
+        return clientRepository.findAll();
+    }
 }

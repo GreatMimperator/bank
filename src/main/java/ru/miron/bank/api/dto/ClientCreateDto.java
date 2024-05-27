@@ -56,6 +56,7 @@ public class ClientCreateDto {
                 birthDate,
                 name, surname, middleName,
                 passwordEncoder.encode(password),
+                accountSize,
                 accountSize
         );
     }

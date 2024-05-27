@@ -8,6 +8,7 @@ CREATE TABLE client (
     middle_name VARCHAR(100) NOT NULL,
     encoded_password VARCHAR(255) NOT NULL,
     account_size NUMERIC(12, 2) NOT NULL CHECK (account_size >= 0.0),
+    account_start_size NUMERIC(12, 2) NOT NULL CHECK (account_start_size >= 0.0),
     CHECK (phone IS NOT NULL OR email IS NOT NULL)
 );
 
@@ -24,5 +25,5 @@ CREATE TABLE clients_transfer (
     timestamp timestamp NOT NULL DEFAULT now()
 );
 
-insert into client values ('bankowner', '7999', 'milkon@', now(), 'mi', 'sur', 'mid', '$2a$10$M1iwX/qHgs7RLNmEJ4WiBOQj7h.R5K.CqT01NJb/YbHFxubF5j/ti', 123);
-insert into client values ('commonuser', '7992', 'milkony@', now(), 'mi', 'sur', 'mid', '$2a$10$M1iwX/qHgs7RLNmEJ4WiBOQj7h.R5K.CqT01NJb/YbHFxubF5j/ti', 123);
+insert into client values ('bankowner', '7999', 'milkon@', now(), 'mi', 'sur', 'mid', '$2a$10$M1iwX/qHgs7RLNmEJ4WiBOQj7h.R5K.CqT01NJb/YbHFxubF5j/ti', 123, 123);
+insert into client values ('commonuser', '7992', 'milkony@', now(), 'mi', 'sur', 'mid', '$2a$10$M1iwX/qHgs7RLNmEJ4WiBOQj7h.R5K.CqT01NJb/YbHFxubF5j/ti', 140, 140);
