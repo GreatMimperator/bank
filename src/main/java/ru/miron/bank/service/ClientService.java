@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -87,6 +88,7 @@ public class ClientService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Retryable(maxAttempts = 15)
     public ClientsTransfer transfer(String senderLogin, String receiverLogin, BigDecimal amount) {
         if (senderLogin.equals(receiverLogin)) {
             throw new SenderEqualsReceiverException();

@@ -27,6 +27,11 @@ public class LoginPasswordDto {
     @ValidPassword
     private String password;
 
+    public LoginPasswordDto(String login, String password) {
+        setLogin(login);
+        setPassword(password);
+    }
+
     public Optional<Pair<Client.IdType, String>> getId() {
         if (login != null) {
             return Optional.of(Pair.of(Client.IdType.LOGIN, login));

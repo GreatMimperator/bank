@@ -3,6 +3,7 @@ package ru.miron.bank.background.sheduled;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 @Service
 @AllArgsConstructor
 @Slf4j
+@Profile("!test")
 public class ClientActionsScheduler {
 
     public final ClientRepository repository;
